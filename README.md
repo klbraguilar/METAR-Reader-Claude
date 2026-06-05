@@ -83,6 +83,49 @@ flask run
 
 ---
 
+## Testing
+
+### Unit & integration tests (`test_app.py`)
+
+The main test suite uses [pytest](https://pytest.org) and covers two layers:
+
+- **Parser tests** — feed raw METAR strings directly to `parse_metar()` and assert the decoded fields (wind, visibility, weather, sky, temperature, altimeter, summary). No network calls needed.
+- **Flask route tests** — exercise the `/` GET and POST routes via Flask's test client with `requests.get` mocked, so no real API calls are made.
+
+Run the full suite:
+
+```bash
+pytest test_app.py -v
+```
+
+Test classes at a glance:
+
+| Class | What it covers |
+|---|---|
+| `TestWindParsing` | Calm, directional, variable, gusts, m/s units |
+| `TestVisibilityParsing` | SM fractions, CAVOK, metric (km) |
+| `TestWeatherParsing` | Rain, drizzle, fog, combined phenomena |
+| `TestSkyParsing` | Clear, broken, overcast, CB/TCU annotations |
+| `TestTemperatureParsing` | Positive/negative °C, °F conversion, `M` prefix |
+| `TestAltimeterParsing` | inHg and hPa formats |
+| `TestPrefixAndFlags` | METAR/SPECI prefixes, AUTO flag, RMK section |
+| `TestSummaryGeneration` | Human-readable summary string |
+| `TestFlaskRoutes` | HTTP 200, empty input, API errors, network errors |
+
+### Smoke test (`test_parser.py`)
+
+A lightweight script that runs four representative METAR strings through the parser and prints decoded output to the terminal — useful for quick visual checks during development.
+
+```bash
+python test_parser.py
+```
+
+### Dependencies
+
+Testing requires `pytest` (included in `requirements.txt`). Install it with the regular `pip install -r requirements.txt` step.
+
+---
+
 ## Project Structure
 
 ```
@@ -90,6 +133,8 @@ flask run
 ├── metar_parser.py     # METAR decoding logic
 ├── templates/
 │   └── index.html      # Front-end (single-page, no JS framework)
+├── test_app.py         # pytest unit + Flask route tests
+├── test_parser.py      # Quick parser smoke test (print output)
 ├── requirements.txt
 └── README.md
 ```
